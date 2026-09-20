@@ -1,5 +1,11 @@
 # StudentDB Android App 📱
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Platform-Android%20(API%2024%2B)-green.svg?style=flat&logo=android)](https://developer.android.com)
+[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-blue.svg?style=flat&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg?style=flat&logo=sqlite)](https://www.sqlite.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A modern Android application demonstrating user authentication and local SQLite database connectivity using **Kotlin** and **Jetpack Compose**. This app showcases best practices for mobile app development with a clean UI and robust database management.
 
 ## Features ✨
@@ -90,8 +96,8 @@ app/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/StudentDB-Android.git
-   cd AndroidDBConnectivity
+   git clone https://github.com/Rajapakshaminindu/StudentDB-Android.git
+   cd StudentDB-Android
    ```
 
 2. **Open in Android Studio**
@@ -192,10 +198,11 @@ Contributions are welcome! Please follow these steps:
 
 ## License 📄
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author ✍️
 
+Developed by **[Minindu Rajapaksha](https://github.com/Rajapakshaminindu)**.
 Created as a demonstration of Android development with Kotlin and Jetpack Compose.
 
 ## Support 💬
