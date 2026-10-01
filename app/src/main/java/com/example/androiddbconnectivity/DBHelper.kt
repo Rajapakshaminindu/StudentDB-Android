@@ -46,9 +46,9 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         contentValues.put(COL_REG_NO, regNo)
         contentValues.put(COL_DEPT, dept)
         contentValues.put(COL_EMAIL, email)
-        contentValues.put(COL_PASSWORD, pass)
+        contentValues.put(COL_PASSWORD, SecurityUtils.hashPassword(pass))
         contentValues.put(COL_PHONE, phone)
-        
+
         val success = db.insert(TABLE_USERS, null, contentValues)
         db.close()
         return success
@@ -56,11 +56,16 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
     fun checkUserLogin(email: String, pass: String): Boolean {
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COL_EMAIL = ? AND $COL_PASSWORD = ?", arrayOf(email, pass))
-        val exists = cursor.count > 0
+        // Retrieve stored hash by email, then compare using SecurityUtils
+        val cursor = db.rawQuery("SELECT $COL_PASSWORD FROM $TABLE_USERS WHERE $COL_EMAIL = ?", arrayOf(email))
+        var authenticated = false
+        if (cursor.moveToFirst()) {
+            val storedHash = cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD))
+            authenticated = SecurityUtils.verifyPassword(pass, storedHash)
+        }
         cursor.close()
         db.close()
-        return exists
+        return authenticated
     }
 
     fun getUserDetails(email: String): User? {
