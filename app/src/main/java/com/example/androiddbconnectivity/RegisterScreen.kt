@@ -21,9 +21,19 @@ fun RegisterScreen(dbHelper: DBHelper, onRegisterSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    
+
+    // Validation error states — only shown after first submit attempt
+    var submitted by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    val nameError = submitted && name.isBlank()
+    val regNoError = submitted && regNo.isBlank()
+    val departmentError = submitted && department.isBlank()
+    val emailError = submitted && !ValidationUtils.isValidEmail(email)
+    val passwordError = submitted && !ValidationUtils.isValidPassword(password)
+    val phoneError = submitted && !ValidationUtils.isValidPhone(phone)
 
     Column(
         modifier = Modifier
@@ -36,35 +46,82 @@ fun RegisterScreen(dbHelper: DBHelper, onRegisterSuccess: () -> Unit) {
         Text(text = "Register", fontSize = 30.sp, style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Student Name") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Student Name") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = nameError,
+            supportingText = if (nameError) { { Text("Name is required") } } else null
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(value = regNo, onValueChange = { regNo = it }, label = { Text("Registration No") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = regNo,
+            onValueChange = { regNo = it },
+            label = { Text("Registration No") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = regNoError,
+            supportingText = if (regNoError) { { Text("Registration number is required") } } else null
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(value = department, onValueChange = { department = it }, label = { Text("Department") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = department,
+            onValueChange = { department = it },
+            label = { Text("Department") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = departmentError,
+            supportingText = if (departmentError) { { Text("Department is required") } } else null
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = emailError,
+            supportingText = if (emailError) { { Text("Enter a valid email address") } } else null
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+            isError = passwordError,
+            supportingText = if (passwordError) { { Text("Password must be at least 6 characters") } } else null
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Phone") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = phoneError,
+            supportingText = if (phoneError) { { Text("Enter a valid phone number (9–15 digits)") } } else null
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                if (name.isEmpty() || regNo.isEmpty() || department.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty()) {
-                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                submitted = true
+                val isValid = ValidationUtils.areRegistrationFieldsValid(
+                    name, regNo, department, email, password, phone
+                )
+                if (!isValid) {
+                    Toast.makeText(context, "Please fix the errors above", Toast.LENGTH_SHORT).show()
                 } else {
                     val result = dbHelper.insertUser(name, regNo, department, email, password, phone)
                     if (result != -1L) {
                         Toast.makeText(context, "Registered Successfully!", Toast.LENGTH_SHORT).show()
                         onRegisterSuccess()
                     } else {
-                        Toast.makeText(context, "Registration Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Registration Failed — email may already be in use", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
