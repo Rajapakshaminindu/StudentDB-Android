@@ -81,4 +81,71 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.close()
         return user
     }
+
+    /**
+     * Retrieves all registered users from the database.
+     */
+    fun getAllUsers(): List<User> {
+        val userList = mutableListOf<User>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS ORDER BY $COL_ID DESC", null)
+        if (cursor.moveToFirst()) {
+            do {
+                val user = User(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
+                    regNo = cursor.getString(cursor.getColumnIndexOrThrow(COL_REG_NO)),
+                    department = cursor.getString(cursor.getColumnIndexOrThrow(COL_DEPT)),
+                    email = cursor.getString(cursor.getColumnIndexOrThrow(COL_EMAIL)),
+                    phone = cursor.getString(cursor.getColumnIndexOrThrow(COL_PHONE))
+                )
+                userList.add(user)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
+
+    /**
+     * Updates an existing user's details.
+     */
+    fun updateUser(user: User): Int {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put(COL_NAME, user.name)
+            put(COL_REG_NO, user.regNo)
+            put(COL_DEPT, user.department)
+            put(COL_EMAIL, user.email)
+            put(COL_PHONE, user.phone)
+        }
+        val rowsAffected = db.update(TABLE_USERS, contentValues, "$COL_ID = ?", arrayOf(user.id.toString()))
+        db.close()
+        return rowsAffected
+    }
+
+    /**
+     * Deletes a user by their unique database ID.
+     */
+    fun deleteUser(id: Int): Int {
+        val db = this.writableDatabase
+        val rowsAffected = db.delete(TABLE_USERS, "$COL_ID = ?", arrayOf(id.toString()))
+        db.close()
+        return rowsAffected
+    }
+
+    /**
+     * Returns total number of registered users.
+     */
+    fun getUserCount(): Int {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_USERS", null)
+        var count = 0
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0)
+        }
+        cursor.close()
+        db.close()
+        return count
+    }
 }
