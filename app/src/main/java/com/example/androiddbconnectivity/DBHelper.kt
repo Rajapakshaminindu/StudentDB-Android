@@ -153,4 +153,34 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.close()
         return count
     }
-}
+
+    /**
+     * Searches registered users matching a keyword across name, regNo, department, or email.
+     */
+    fun searchUsers(query: String): List<User> {
+        if (query.isBlank()) return getAllUsers()
+        val userList = mutableListOf<User>()
+        val db = this.readableDatabase
+        val wildcard = "%$query%"
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_USERS WHERE $COL_NAME LIKE ? OR $COL_REG_NO LIKE ? OR $COL_DEPT LIKE ? OR $COL_EMAIL LIKE ? ORDER BY $COL_ID DESC",
+            arrayOf(wildcard, wildcard, wildcard, wildcard)
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                val user = User(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
+                    regNo = cursor.getString(cursor.getColumnIndexOrThrow(COL_REG_NO)),
+                    department = cursor.getString(cursor.getColumnIndexOrThrow(COL_DEPT)),
+                    email = cursor.getString(cursor.getColumnIndexOrThrow(COL_EMAIL)),
+                    phone = cursor.getString(cursor.getColumnIndexOrThrow(COL_PHONE))
+                )
+                userList.add(user)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
+}

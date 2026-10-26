@@ -17,6 +17,7 @@ import androidx.compose.ui.window.Dialog
 @Composable
 fun DashboardScreen(dbHelper: DBHelper, email: String, onLogout: () -> Unit) {
     val user = remember { dbHelper.getUserDetails(email) }
+    var userCount by remember { mutableStateOf(dbHelper.getUserCount()) }
 
     var showStudentDirectory by remember { mutableStateOf(false) }
     var showRegisteredAccounts by remember { mutableStateOf(false) }
@@ -36,14 +37,54 @@ fun DashboardScreen(dbHelper: DBHelper, email: String, onLogout: () -> Unit) {
         )
         Text(
             text = "Student Directory Dashboard",
-            fontSize = 18.sp,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyLarge
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Total Students Quick Stat Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Total Enrolled",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "$userCount Students",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { showStudentDirectory = true },
+            onClick = {
+                userCount = dbHelper.getUserCount()
+                showStudentDirectory = true
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Student Directory")
@@ -52,7 +93,10 @@ fun DashboardScreen(dbHelper: DBHelper, email: String, onLogout: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { showRegisteredAccounts = true },
+            onClick = {
+                userCount = dbHelper.getUserCount()
+                showRegisteredAccounts = true
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Registered Accounts")
@@ -71,27 +115,39 @@ fun DashboardScreen(dbHelper: DBHelper, email: String, onLogout: () -> Unit) {
 
     // Student Directory Dialog
     if (showStudentDirectory) {
-        val students = remember { dbHelper.getAllUsers() }
         StudentListDialog(
             title = "Student Directory",
-            users = students,
+            dbHelper = dbHelper,
             onDismiss = { showStudentDirectory = false }
         )
     }
 
     // Registered Accounts Dialog
     if (showRegisteredAccounts) {
-        val accounts = remember { dbHelper.getAllUsers() }
         StudentListDialog(
             title = "Registered Accounts",
-            users = accounts,
+            dbHelper = dbHelper,
             onDismiss = { showRegisteredAccounts = false }
         )
     }
 }
 
 @Composable
-fun StudentListDialog(title: String, users: List<User>, onDismiss: () -> Unit) {
+fun StudentListDialog(
+    title: String,
+    dbHelper: DBHelper,
+    onDismiss: () -> Unit
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    val allStudents = remember { dbHelper.getAllUsers() }
+    val filteredStudents = remember(searchQuery) {
+        if (searchQuery.isBlank()) {
+            allStudents
+        } else {
+            dbHelper.searchUsers(searchQuery)
+        }
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -105,11 +161,23 @@ fun StudentListDialog(title: String, users: List<User>, onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search by name, reg no, or dept") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if (users.isEmpty()) {
+                if (filteredStudents.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -121,7 +189,7 @@ fun StudentListDialog(title: String, users: List<User>, onDismiss: () -> Unit) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "No students registered yet",
+                                text = if (searchQuery.isBlank()) "No students registered yet" else "No matching students found",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.outline
                             )
@@ -129,13 +197,16 @@ fun StudentListDialog(title: String, users: List<User>, onDismiss: () -> Unit) {
                     }
                 } else {
                     Text(
-                        text = "${users.size} student(s) found",
+                        text = "${filteredStudents.size} student(s) found",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.outline
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(users) { student ->
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredStudents) { student ->
                             StudentCard(student = student)
                         }
                     }
@@ -152,6 +223,7 @@ fun StudentListDialog(title: String, users: List<User>, onDismiss: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun StudentCard(student: User) {
