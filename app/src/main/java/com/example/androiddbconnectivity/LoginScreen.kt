@@ -2,12 +2,15 @@ package com.example.androiddbconnectivity
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -15,7 +18,12 @@ import androidx.compose.ui.unit.sp
 fun LoginScreen(dbHelper: DBHelper, onLoginSuccess: (String) -> Unit, onNavigateToRegister: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var submitted by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val emailError = submitted && !ValidationUtils.isValidEmail(email)
+    val passwordError = submitted && password.isBlank()
 
     Column(
         modifier = Modifier
@@ -31,7 +39,11 @@ fun LoginScreen(dbHelper: DBHelper, onLoginSuccess: (String) -> Unit, onNavigate
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = emailError,
+            supportingText = if (emailError) { { Text("Enter a valid email address") } } else null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -40,23 +52,36 @@ fun LoginScreen(dbHelper: DBHelper, onLoginSuccess: (String) -> Unit, onNavigate
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+            isError = passwordError,
+            supportingText = if (passwordError) { { Text("Password is required") } } else null,
+            trailingIcon = {
+                TextButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Text(
+                        text = if (passwordVisible) "Hide" else "Show",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                submitted = true
+                if (!ValidationUtils.isValidEmail(email) || password.isBlank()) {
+                    Toast.makeText(context, "Please enter valid credentials", Toast.LENGTH_SHORT).show()
                 } else {
                     val isValid = dbHelper.checkUserLogin(email, password)
                     if (isValid) {
                         Toast.makeText(context, "Login success", Toast.LENGTH_SHORT).show()
                         onLoginSuccess(email)
                     } else {
-                        Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Invalid email or password", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
@@ -69,4 +94,4 @@ fun LoginScreen(dbHelper: DBHelper, onLoginSuccess: (String) -> Unit, onNavigate
             Text("Don't have an account? Register")
         }
     }
-}
+}
