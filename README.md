@@ -56,17 +56,23 @@ app/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/androiddbconnectivity/
-│   │   │   ├── MainActivity.kt          # Main activity entry point
-│   │   │   ├── LoginScreen.kt           # Login UI screen
-│   │   │   ├── RegisterScreen.kt        # Registration UI screen
-│   │   │   ├── DashboardScreen.kt       # Dashboard/home screen
+│   │   │   ├── MainActivity.kt          # Main activity entry point & navigation
+│   │   │   ├── LoginScreen.kt           # Login UI with password toggle & validation
+│   │   │   ├── RegisterScreen.kt        # Registration UI with inline error states
+│   │   │   ├── DashboardScreen.kt       # Dashboard with statistics & real-time search
 │   │   │   ├── User.kt                  # User data model
-│   │   │   ├── DBHelper.kt              # SQLite database helper
-│   │   │   └── ui/                      # UI components
-│   │   └── res/                         # Resources (layouts, strings, etc.)
-│   └── test/                            # Unit tests
+│   │   │   ├── DBHelper.kt              # SQLite database helper with full CRUD & search
+│   │   │   ├── SecurityUtils.kt         # SHA-256 password hashing & verification
+│   │   │   ├── ValidationUtils.kt       # Client-side input validation helpers
+│   │   │   └── ui/                      # Material 3 theme & typography
+│   │   └── res/                         # Android resources
+│   └── test/                            # Unit test suite
+│       ├── ExampleUnitTest.kt           # Smoke tests
+│       ├── SecurityUtilsTest.kt         # Cryptographic hashing & verification tests
+│       ├── ValidationUtilsTest.kt       # Email, phone & field validation tests
+│       └── UserTest.kt                  # User data model tests
 ├── build.gradle.kts                     # App-level build configuration
-└── README.md                            # This file
+└── README.md                            # Documentation
 ```
 
 ## Database Schema 📊
