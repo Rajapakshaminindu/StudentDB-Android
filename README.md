@@ -211,11 +211,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Developed by **[Minindu Rajapaksha](https://github.com/Rajapakshaminindu)**.
 Created as a demonstration of Android development with Kotlin and Jetpack Compose.
 
-## Support 💬
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Create a discussion in the repository
 
 ## Roadmap 🗺️
 
@@ -227,6 +222,5 @@ Future enhancements:
 - [ ] Add data export functionality
 - [ ] Implement offline-first sync
 
----
 
-**Happy Coding! 🎉**
+
