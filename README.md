@@ -8,7 +8,7 @@
 
 A modern Android application demonstrating user authentication and local SQLite database connectivity using **Kotlin** and **Jetpack Compose**. This app showcases best practices for mobile app development with a clean UI and robust database management.
 
-## Features ✨
+## Features....
 
 - **User Authentication**
   - User registration with validation
@@ -16,7 +16,7 @@ A modern Android application demonstrating user authentication and local SQLite 
   - Password-based authentication
 
 - **Database Management**
-  - Local SQLite database for persistent data storage
+  - Local SQLite database for persistent data storage...
   - CRUD operations for user data
   - Efficient data management
 
